@@ -1,10 +1,10 @@
-#! /bin/sh
+#! /bin/bash
 # Author: cryptbook@gmail.com
 # ***   Description   ***
 # nvidia-fan.sh script for controlling fan speed for Nvidia cards under Ubuntu 16.04
 #
 # This version:
-# Rewritten to shell (sh) compability
+# some improvements
 #
 # Algo:
 # 1) if gpu temperature  > 68 - maximum speed (=100)
