@@ -58,7 +58,7 @@ fi
 NUMGPU="$(nvidia-smi -L | wc -l)"
 # loop through each GPU and individually set parameters
 n=0
-#export DISPLAY=:0
+export DISPLAY=:0
 #xhost +
 targetFanSpeed=80
 echo "GPU,temperature,fanspeed_asis,fanspeed_tobe"
