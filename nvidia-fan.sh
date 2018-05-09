@@ -6,6 +6,7 @@
 # Version 0.5.1
 #
 # Release notes
+# 0.5.2 - some fixes in code
 # 0.5.1 - fixed empty UUID for P106-100 cards
 # 0.5 - output format changed
 # 0.4 - added lock file, datetime stamp
@@ -26,8 +27,8 @@
 
 calcTargetFanSpeed() #calculate new fan speed
 {
-                #$1 current GPU temperature
-                #$2 current fan speed
+        #$1 current GPU temperature
+        #$2 current fan speed
         targetFanSpeed=$2
         if   [ $1 -ge 68 ]; then #overheating !!!
                 targetFanSpeed=100
@@ -45,11 +46,15 @@ calcTargetFanSpeed() #calculate new fan speed
 
 setTargetFanSpeed() #set fan speed
 {
+	#$1 nvidia-settings
+	#$2 GPU number
+	#$3 target fan speed (% percent)
         $1 -a [fan:$2]/GPUTargetFanSpeed=$3
 }
 
 pidFileWrite() #write PID file
 {
+	#$1 - path to PID file
 	echo $$ > $1
         if [ $? -ne 0 ]
         then
@@ -117,8 +122,7 @@ do
                 statusFan="SET $fanSpeed->$targetFanSpeed"
         fi
         #info
-	#UUID=`eval 'nvidia-smi -L | awk '"'"'{if (substr($2,1,1)=='"${n}"') print substr($8,1,length($8)-1)}'"'"''`
-	UUID=`eval 'nvidia-smi -L | awk '"'"'{n=index($0,"UUID"); if (substr($2,1,1)=='"${n}"') print substr($0,n+6,length($0)-n-6)}'"'"''`
+	UUID=`eval "${SMI}"' -L | awk '"'"'{n=index($0,"UUID"); if (substr($2,1,1)=='"${n}"') print substr($0,n+6,length($0)-n-6)}'"'"''`
         dt=$(date '+%Y%m%d %H:%M:%S');	
         echo "${dt},$HOSTNAME,GPU ${n},${UUID},$gpuTemp,$fanSpeed,$targetFanSpeed,$statusFan"
         #next gpu
