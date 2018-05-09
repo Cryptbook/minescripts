@@ -3,9 +3,10 @@
 # ***   Description   ***
 # nvidia-fan.sh script for controlling fan speed for Nvidia cards under Ubuntu 16.04
 #
-# Version 0.5
+# Version 0.5.1
 #
 # Release notes
+# 0.5.1 - fixed empty UUID for P106-100 cards
 # 0.5 - output format changed
 # 0.4 - added lock file, datetime stamp
 # 0.3 - added export DISPLAY:0
@@ -116,7 +117,8 @@ do
                 statusFan="SET $fanSpeed->$targetFanSpeed"
         fi
         #info
-		UUID=`eval 'nvidia-smi -L | awk '"'"'{if (substr($2,1,1)=='"${n}"') print substr($8,1,length($8)-1)}'"'"''`
+	#UUID=`eval 'nvidia-smi -L | awk '"'"'{if (substr($2,1,1)=='"${n}"') print substr($8,1,length($8)-1)}'"'"''`
+	UUID=`eval 'nvidia-smi -L | awk '"'"'{n=index($0,"UUID"); if (substr($2,1,1)=='"${n}"') print substr($0,n+6,length($0)-n-6)}'"'"''`
         dt=$(date '+%Y%m%d %H:%M:%S');	
         echo "${dt},$HOSTNAME,GPU ${n},${UUID},$gpuTemp,$fanSpeed,$targetFanSpeed,$statusFan"
         #next gpu
