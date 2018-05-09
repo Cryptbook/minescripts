@@ -3,8 +3,10 @@
 # ***   Description   ***
 # nvidia-fan.sh script for controlling fan speed for Nvidia cards under Ubuntu 16.04
 #
-# Version 0.4
+# Version 0.5
+#
 # Release notes
+# 0.5 - output format changed
 # 0.4 - added lock file, datetime stamp
 # 0.3 - added export DISPLAY:0
 # 0.2 - sh (shell) compability
@@ -19,7 +21,7 @@
 # Sources used:
 # 1) https://gist.github.com/squadbox/e5b5f7bcd86259d627ed
 # 2) https://gist.github.com/MihailJP/7318694
-
+# 3) http://bencane.com/2015/09/22/preventing-duplicate-cron-job-executions/
 
 calcTargetFanSpeed() #calculate new fan speed
 {
@@ -97,9 +99,7 @@ export DISPLAY=:0
 #xhost +
 targetFanSpeed=80
 #Out datetime stamp
-dt=$(date '+%Y%m%d %H:%M:%S');
-echo "Datetime: ${dt}"
-echo "GPU,temperature,fanspeed_asis,fanspeed_tobe"
+echo "datetime,host,GPU,UUID,temperature,fanspeed_ASIS,fanspeed_TOBE,action"
 while [  $n -lt  $NUMGPU ];
 do
         #current N gpu temp
@@ -108,15 +108,17 @@ do
         fanSpeed=$(${SET} -q [fan:${n}]/GPUTargetFanSpeed | grep '^  Attribute'| perl -pe 's/^.*?(\d+)\.\s*$/\1/;')
                 #target N fan speed
         targetFanSpeed=$(calcTargetFanSpeed $gpuTemp $fanSpeed)
-                #info
-        echo "GPU ${n},$gpuTemp,$fanSpeed,$targetFanSpeed"
-                #change speed only if needed
+        #change speed only if needed
         if [ $fanSpeed -eq $targetFanSpeed ]; then
-                echo "GPU ${n}:Fanspeed not changed ($fanSpeed)"
+                statusFan="Skip ($fanSpeed)"
         else
                 setTargetFanSpeed $SET ${n} $targetFanSpeed
-                echo "GPU ${n}:Fanspeed changed $fanSpeed-->$targetFanSpeed"
+                statusFan="SET $fanSpeed->$targetFanSpeed"
         fi
+        #info
+		UUID=`eval 'nvidia-smi -L | awk '"'"'{if (substr($2,1,1)=='"${n}"') print substr($8,1,length($8)-1)}'"'"''`
+        dt=$(date '+%Y%m%d %H:%M:%S');	
+        echo "${dt},$HOSTNAME,GPU ${n},${UUID},$gpuTemp,$fanSpeed,$targetFanSpeed,$statusFan"
         #next gpu
         n=$(expr $n + 1)
 done
