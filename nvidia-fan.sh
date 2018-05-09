@@ -3,16 +3,20 @@
 # ***   Description   ***
 # nvidia-fan.sh script for controlling fan speed for Nvidia cards under Ubuntu 16.04
 #
-# This version:
-# some improvements
-#
+# Version 0.4
+# Release notes
+# 0.4 - added lock file, datetime stamp
+# 0.3 - added export DISPLAY:0
+# 0.2 - sh (shell) compability
+# 0.1 - initial script version
+# 
 # Algo:
 # 1) if gpu temperature  > 68 - maximum speed (=100)
 # 2) if gpu temperature near high (>=65) and fan speed slow (<=80) set 80% fan speed
 # 3) if gpu temperature low (<=60) and fan speed high (>=80) slow fan to 60%
 # 4) if gpu temperature very low (<=50) and fan speed (>=60) slow fan to 40%
 #
-# Sources:
+# Sources used:
 # 1) https://gist.github.com/squadbox/e5b5f7bcd86259d627ed
 # 2) https://gist.github.com/MihailJP/7318694
 
@@ -41,9 +45,40 @@ setTargetFanSpeed() #set fan speed
         $1 -a [fan:$2]/GPUTargetFanSpeed=$3
 }
 
+pidFileWrite() #write PID file
+{
+	echo $$ > $1
+        if [ $? -ne 0 ]
+        then
+        	echo "Could not create PID file"
+         exit 1
+        fi
+}
+
+#
+# START PROGRAM
+#
+
 # Paths to the utilities we will need
 SMI='/usr/bin/nvidia-smi'
 SET='/usr/bin/nvidia-settings'
+#PIDFILE check (check there is no instances of this script)
+PIDFILE='/tmp/nvidia-fan.pid'
+if [ -f $PIDFILE ]
+then
+	PID=$(cat $PIDFILE)
+	ps -p $PID > /dev/null 2>&1
+	if [ $? -eq 0 ]
+	then
+		echo "Job is already running. Stop execution."
+    		exit 1
+	else
+		## Process not found assume not running
+		pidFileWrite $PIDFILE
+	fi
+else
+	pidFileWrite $PIDFILE
+fi
 
 # Determine major driver version
 VER=`awk '/NVIDIA/ {print $8}' /proc/driver/nvidia/version | cut -d . -f 1`
@@ -61,6 +96,9 @@ n=0
 export DISPLAY=:0
 #xhost +
 targetFanSpeed=80
+#Out datetime stamp
+dt=$(date '+%Y%m%d %H:%M:%S');
+echo "Datetime: ${dt}"
 echo "GPU,temperature,fanspeed_asis,fanspeed_tobe"
 while [  $n -lt  $NUMGPU ];
 do
@@ -83,4 +121,6 @@ do
         n=$(expr $n + 1)
 done
 
+#clean up PIDFILE
+rm $PIDFILE
 echo "Complete"; exit 0;
