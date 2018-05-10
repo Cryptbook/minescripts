@@ -3,10 +3,10 @@
 # ***   Description   ***
 # nvidia-fan.sh script for controlling fan speed for Nvidia cards under Ubuntu 16.04
 #
-# Version 0.5.1
+# Version 0.5.2
 #
 # Release notes
-# 0.5.2 - some fixes in code
+# 0.5.2 - change fan speed limits & some fixes in code
 # 0.5.1 - fixed empty UUID for P106-100 cards
 # 0.5 - output format changed
 # 0.4 - added lock file, datetime stamp
@@ -17,8 +17,8 @@
 # Algo:
 # 1) if gpu temperature  > 68 - maximum speed (=100)
 # 2) if gpu temperature near high (>=65) and fan speed slow (<=80) set 80% fan speed
-# 3) if gpu temperature low (<=60) and fan speed high (>=80) slow fan to 60%
-# 4) if gpu temperature very low (<=50) and fan speed (>=60) slow fan to 40%
+# 3) if gpu temperature low (<=55) and fan speed high (>=80) slow fan to 60%
+# 4) if gpu temperature very low (<=45) and fan speed (>=60) slow fan to 40%
 #
 # Sources used:
 # 1) https://gist.github.com/squadbox/e5b5f7bcd86259d627ed
@@ -35,9 +35,9 @@ calcTargetFanSpeed() #calculate new fan speed
         else #normal temperature
                 if [ $1 -ge 65 ] && [ $2 -le 80 ]; then  #high temperature low fan speed
                         targetFanSpeed=80 #increase fan speed
-                elif [ $1 -le 60 ] && [ $2 -ge 80 ]; then #low temperature high fan speed
+                elif [ $1 -le 55 ] && [ $2 -ge 80 ]; then #low temperature high fan speed
                         targetFanSpeed=60 #slow fan
-                elif [ $1 -le 50 ] && [ $2 -ge 60 ]; then #low temperature high fan speed
+                elif [ $1 -le 45 ] && [ $2 -ge 60 ]; then #low temperature high fan speed
                         targetFanSpeed=40 #very slow fan
                 fi
         fi
