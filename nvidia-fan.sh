@@ -105,7 +105,7 @@ export DISPLAY=:0
 #xhost +
 targetFanSpeed=80
 #Out datetime stamp
-echo "datetime,host,GPU,UUID,temperature,fanspeed_ASIS,fanspeed_TOBE,action"
+#echo "datetime,host,GPU,UUID,temperature,fanspeed_ASIS,fanspeed_TOBE,action"
 while [  $n -lt  $NUMGPU ];
 do
         #current N gpu temp
@@ -131,4 +131,5 @@ done
 
 #clean up PIDFILE
 rm $PIDFILE
-echo "Complete"; exit 0;
+#echo "Complete"; 
+exit 0
